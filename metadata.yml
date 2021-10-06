@@ -1,0 +1,7 @@
+homepage: "https://borlabs.io/"
+documentation: "https://borlabs.io/kb/google-tag-manager/"
+versions:
+  # Latest version
+  - sha: TODO
+    changeNotes: Initial release.
+  # Older versions
