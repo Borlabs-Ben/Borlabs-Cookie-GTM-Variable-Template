@@ -2,6 +2,6 @@ homepage: "https://borlabs.io/"
 documentation: "https://borlabs.io/kb/google-tag-manager/"
 versions:
   # Latest version
-  - sha: 1554534b3093c1c63d83615e7eb2db2d883edb7a
+  - sha: f5d9adeee7b5d46bbb19c8e51b9980773ac2c936
     changeNotes: Initial release.
   # Older versions
