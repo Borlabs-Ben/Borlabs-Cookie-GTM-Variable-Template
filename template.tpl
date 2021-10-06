@@ -1,4 +1,12 @@
-﻿___INFO___
+﻿___TERMS_OF_SERVICE___
+
+By creating or modifying this file you agree to Google Tag Manager's Community
+Template Gallery Developer Terms of Service available at
+https://developers.google.com/tag-manager/gallery-tos (or such other URL as
+Google may provide), as modified from time to time.
+
+
+___INFO___
 
 {
   "type": "MACRO",
@@ -6,7 +14,7 @@
   "version": 1,
   "securityGroups": [],
   "displayName": "Borlabs Cookie Consent Variable",
-  "description": "Consent variable for the Wordpress plugin "Borlabs Cookie". The variable returns true if the consent is given and false otherwise. This variable can be used to restrict a trigger to a given cookie consent. See our documentation article about the Google Tag Manager for more information. The link to the documentation is below.",
+  "description": "Consent variable for the Wordpress plugin \"Borlabs Cookie\". See our documentation article about the Google Tag Manager for more information. The link to the documentation is below.",
   "containerContexts": [
     "WEB"
   ],
@@ -35,13 +43,13 @@ const callInWindow = require('callInWindow');
 const log = require('logToConsole');
 const query = require('queryPermission');
 
+log(data);
+
 if (query('access_globals', 'execute', 'BorlabsCookie.checkCookieConsent')) {
   log('permission ok');
-  log(data);
   return callInWindow('BorlabsCookie.checkCookieConsent', data.serviceName);
 } else {
   log('permission failed');
-  log(data);
   return false;
 }
 
@@ -180,6 +188,6 @@ scenarios:
 
 ___NOTES___
 
-Created on 05/10/2021, 20:34:55
+The variable returns true if the consent is given and false otherwise. This variable can be used to restrict a trigger to a given cookie consent.
 
 
