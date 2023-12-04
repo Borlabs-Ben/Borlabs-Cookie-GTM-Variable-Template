@@ -2,6 +2,8 @@ homepage: "https://borlabs.io/"
 documentation: "https://borlabs.io/kb/google-tag-manager/"
 versions:
   # Latest version
+  - sha: fc3b4760c76207ea940b2555798fd6d34e223a0f
+    changeNotes: Added support for Borlabs Cookie V3
   - sha: f5d9adeee7b5d46bbb19c8e51b9980773ac2c936
     changeNotes: Initial release.
   # Older versions
