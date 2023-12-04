@@ -42,16 +42,24 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 const callInWindow = require('callInWindow');
 const log = require('logToConsole');
 const query = require('queryPermission');
+const logPrefix = 'Borlabs Cookie Consent Variable: ';
 
-log(data);
+if (query('access_globals', 'execute', 'BorlabsCookie.checkCookieConsent') && query('access_globals', 'execute', 'BorlabsCookie.Consents.hasConsent')) {
+  const consentValueBorlabsV2 = callInWindow('BorlabsCookie.checkCookieConsent', data.serviceName);
+  if (typeof consentValueBorlabsV2 !== 'undefined') {
+    return consentValueBorlabsV2;
+  }
+  const consentValueBorlabsV3 = callInWindow('BorlabsCookie.Consents.hasConsent', data.serviceName);
+  if (typeof consentValueBorlabsV3 !== 'undefined') {
+    return consentValueBorlabsV3;
+  }
 
-if (query('access_globals', 'execute', 'BorlabsCookie.checkCookieConsent')) {
-  log('permission ok');
-  return callInWindow('BorlabsCookie.checkCookieConsent', data.serviceName);
-} else {
-  log('permission failed');
+  log(logPrefix+'Borlabs Cookie is not installed');
   return false;
 }
+
+log(logPrefix+'Variable is missing permissions');
+return false;
 
 
 ___WEB_PERMISSIONS___
@@ -107,6 +115,45 @@ ___WEB_PERMISSIONS___
                     "boolean": true
                   }
                 ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "BorlabsCookie.Consents.hasConsent"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
               }
             ]
           }
@@ -142,7 +189,7 @@ ___WEB_PERMISSIONS___
 ___TESTS___
 
 scenarios:
-- name: No permission returns false
+- name: If no permission returns false
   code: |-
     // arrange
     const log = require('logToConsole');
@@ -163,18 +210,22 @@ scenarios:
     // assert
     assertThat(variableResult).isEqualTo(false);
     assertApi('callInWindow').wasNotCalled();
-    assertApi('logToConsole').wasCalledWith('permission failed');
-- name: Permission ok returns value of checkCookieConsent
-  code: |-
+    assertApi('logToConsole').wasCalledWith('Borlabs Cookie Consent Variable: Variable is missing permissions');
+- name: If consent was given for provided cookie return true (Borlabs Cookie V2)
+  code: |
     // arrange
     const log = require('logToConsole');
     const mockData = {
       serviceName: 'test-service'
     };
     mock('callInWindow', function(pathToFunction, argument1) {
-      log(pathToFunction);
-      log(argument1);
-      return true;
+      if (pathToFunction === 'BorlabsCookie.checkCookieConsent') {
+        return true;
+      }
+      if (pathToFunction === 'BorlabsCookie.Consents.hasConsent') {
+        return undefined;
+      }
+      fail('Calling "'+pathToFunction+'" in window is not expected!');
     });
 
     // act
@@ -183,7 +234,56 @@ scenarios:
     // assert
     assertThat(variableResult).isEqualTo(true);
     assertApi('callInWindow').wasCalledWith('BorlabsCookie.checkCookieConsent', mockData.serviceName);
-    assertApi('logToConsole').wasCalledWith('permission ok');
+    assertApi('callInWindow').wasNotCalledWith('BorlabsCookie.Consents.hasConsent', mockData.serviceName);
+- name: If consent was given for provided service return true (Borlabs Cookie V3)
+  code: |
+    // arrange
+    const log = require('logToConsole');
+    const mockData = {
+      serviceName: 'test-service'
+    };
+    mock('callInWindow', function(pathToFunction, argument1) {
+      if (pathToFunction === 'BorlabsCookie.checkCookieConsent') {
+        return undefined;
+      }
+      if (pathToFunction === 'BorlabsCookie.Consents.hasConsent') {
+      return true;
+      }
+      fail('Calling "'+pathToFunction+'" in window is not expected!');
+    });
+
+    // act
+    let variableResult = runCode(mockData);
+
+    // assert
+    assertThat(variableResult).isEqualTo(true);
+    assertApi('callInWindow').wasCalledWith('BorlabsCookie.checkCookieConsent', mockData.serviceName);
+    assertApi('callInWindow').wasCalledWith('BorlabsCookie.Consents.hasConsent', mockData.serviceName);
+- name: If no version of Borlabs Cookie installed returns false
+  code: |-
+    // arrange
+    const log = require('logToConsole');
+    const mockData = {
+      serviceName: 'test-service'
+    };
+    mock('callInWindow', function(pathToFunction, argument1) {
+      if (pathToFunction === 'BorlabsCookie.checkCookieConsent') {
+        return undefined;
+      }
+      if (pathToFunction === 'BorlabsCookie.Consents.hasConsent') {
+        return undefined;
+      }
+      fail('Calling "'+pathToFunction+'" in window is not expected!');
+    });
+
+    // act
+    let variableResult = runCode(mockData);
+
+    // assert
+    assertThat(variableResult).isEqualTo(false);
+    assertApi('callInWindow').wasCalledWith('BorlabsCookie.checkCookieConsent', mockData.serviceName);
+    assertApi('callInWindow').wasCalledWith('BorlabsCookie.Consents.hasConsent', mockData.serviceName);
+    assertApi('logToConsole').wasCalledWith('Borlabs Cookie Consent Variable: Borlabs Cookie is not installed');
 
 
 ___NOTES___
